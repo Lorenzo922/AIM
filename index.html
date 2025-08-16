@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>AIM Chat</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e1e8ed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background-color: #fff;
+        padding: 25px 35px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        width: 450px;
+        max-width: 95%;
+    }
+    h2 { text-align: center; color: #222; margin-bottom: 20px; }
+    #chat {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 15px;
+        height: 350px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+        margin-bottom: 15px;
+    }
+    #message { width: calc(100% - 80px); padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+    #send { width: 70px; padding: 10px; border-radius: 8px; border: none; background-color: #1da1f2; color: white; cursor: pointer; font-weight: bold; margin-left: 5px; }
+    #send:hover { background-color: #0d95e8; }
+    p { margin: 5px 0; }
+    .user { color: #1a73e8; background-color: #e8f0fe; padding: 5px 10px; border-radius: 10px; display: inline-block; }
+    .bot { color: #4CAF50; background-color: #e6f4ea; padding: 5px 10px; border-radius: 10px; display: inline-block; }
+    .maintenance { color: red; text-align: center; font-weight: bold; margin-top: 15px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>AIM Chat</h2>
+    <div id="chat">Conectando ao backend...</div>
+    <div style="display:flex; margin-top:10px;">
+        <input type="text" id="message" placeholder="Digite algo...">
+        <button id="send">Enviar</button>
+    </div>
+    <div id="maintenance" class="maintenance" style="display:none;">Sistema em manutenção</div>
+</div>
+
+<script>
+const chatDiv = document.getElementById("chat");
+const input = document.getElementById("message");
+const button = document.getElementById("send");
+const maintenanceDiv = document.getElementById("maintenance");
+
+// URL do seu backend AIM
+const backendURL = "https://lorenzomasi12.pythonanywhere.com/chat";
+
+button.onclick = async () => {
+    const text = input.value.trim();
+    if (!text) return;
+
+    chatDiv.innerHTML += `<p class="user"><b>Você:</b> ${text}</p>`;
+    input.value = "";
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+
+    try {
+        const response = await fetch(backendURL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+
+        if (!response.ok) throw new Error("Backend não disponível");
+
+        // Aqui pegamos TODO o JSON do backend e mostramos como string
+        const data = await response.json();
+        chatDiv.innerHTML += `<p class="bot"><b>AIM:</b> ${JSON.stringify(data)}</p>`;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        maintenanceDiv.style.display = "none";
+    } catch (err) {
+        maintenanceDiv.style.display = "block";
+    }
+};
+</script>
+</body>
+</html>
